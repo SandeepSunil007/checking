@@ -1,0 +1,138 @@
+ 
+
+     @RequestMapping("/orderFallBack")
+     public Mono<String> orderServiceFallBack(){
+      return Mono.just("Order Service is taking too long to respond or is down. please try after sometime");
+      }
+
+     @RequestMapping("/paymentFallBack")
+    public Mono<String> paymentServiceFallBack(){
+      return Mono.just("Order Service is taking too long to respond or is down. please try after sometime");
+      }
+
+
+
+import reactor.core.publisher.Mono;
+
+filters:
+  -name: CircuteBreaker
+   args:
+     name: order-service
+     fallbackuri: orderFallBack
+
+management:
+  enpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+
+
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000
+
+
+
+
+
+
+
+
+
+spring:
+  application:
+    name: GATEWAY-SERVICE
+  cloud:
+    gateway:
+      routes:
+      - id: oredr-service
+        uri: lb://ORDER-SERVICE
+        predicates:
+           - Path=/order/**
+        filters:
+        - name: CircuiteBreaker
+          args:
+             name: order-service
+             fallbackuri: forward:/orderFallBack
+      - id: payment-service
+        uri: lb://PAYMENT-SERVICE
+        predicates:
+          - Path=/payment/**
+        filters:
+        - name: CircuiteBreaker
+          args:
+             name: payment-service
+             fallbackuri: forward:/ paymentFallBack
+eureka:
+  client:
+     register-with-eureka: true
+     fetch-registry: true
+     service-url:
+       defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    
+server:
+  port: 1234
+  
+management:
+  enpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+        
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 5000 
+        
+        
+      <dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>  
+        
+        
+        
+        @RequestMapping("/orderFallBack")
+	 public Mono<String> orderServiceFallBack(){
+	      return Mono.just("Order Service is taking too long to respond or is down. please try after sometime");
+	      }
+	@RequestMapping("/paymentFallBack")
+	    public Mono<String> paymentServiceFallBack(){
+	      return Mono.just("Order Service is taking too long to respond or is down. please try after sometime");
+	      }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+   
+
+
